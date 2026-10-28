@@ -6,7 +6,7 @@ import { useState } from "react";
 import { NAV } from "@/config/site";
 import { cn } from "@/components/ui/cn";
 
-export function Header() {
+export function Header({ authSlot, authSlotMobile }: { authSlot: React.ReactNode; authSlotMobile: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -34,12 +34,7 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-          <Link
-            href="/sign-in"
-            className="ml-2 inline-flex min-h-11 items-center rounded-full bg-brand px-5 font-semibold text-on-brand hover:bg-brand-strong"
-          >
-            Sign In
-          </Link>
+          <span className="ml-2">{authSlot}</span>
         </nav>
 
         <button
@@ -72,15 +67,7 @@ export function Header() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link
-                href="/sign-in"
-                className={linkClass("/sign-in")}
-                onClick={() => setOpen(false)}
-              >
-                Sign In
-              </Link>
-            </li>
+            <li className="pt-2">{authSlotMobile}</li>
           </ul>
         </nav>
       )}
