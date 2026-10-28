@@ -25,13 +25,14 @@ export function AuthForm({ mode, action }: { mode: "sign-in" | "register"; actio
     <form action={formAction} className="space-y-4" noValidate>
       {state.message && <Alert tone="error">{state.message}</Alert>}
       {register && (
-        <Field label="Name" name="name" autoComplete="name" error={state.errors?.name} required />
+        <Field label="Name" name="name" autoComplete="name" defaultValue={state.values?.name} error={state.errors?.name} required />
       )}
       <Field
         label="Email"
         type="email"
         name="email"
         autoComplete="email"
+        defaultValue={state.values?.email}
         error={state.errors?.email}
         required
       />

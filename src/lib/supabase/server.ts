@@ -1,12 +1,16 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { getSupabaseConfig } from "./config";
 
 /** Server-side Supabase client bound to the request's cookies. Uses the anon key; RLS applies. */
 export async function createClient() {
   const cfg = getSupabaseConfig();
   if (!cfg) throw new Error("Supabase is not configured");
+  // Session checks read the clock and the user's cookies, so they must only run at request time,
+  // never during prerendering or prefetching.
+  await connection();
   const cookieStore = await cookies();
   return createServerClient(cfg.url, cfg.anonKey, {
     cookies: {
