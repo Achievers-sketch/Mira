@@ -20,4 +20,4 @@ trap '"$PGBIN/pg_ctl" -D "$WORK/data" -m immediate stop >/dev/null; rm -rf "$WOR
 PSQL=("$PGBIN/psql" -h "$WORK" -p 54999 -U postgres -v ON_ERROR_STOP=1 -q postgres)
 "${PSQL[@]}" -f "$HERE/shim.sql"
 for m in "$ROOT"/supabase/migrations/*.sql; do "${PSQL[@]}" -f "$m"; done
-"${PSQL[@]}" -f "$HERE/rls.test.sql" 2>&1
+for t in rls.test.sql chat.test.sql; do "${PSQL[@]}" -f "$HERE/$t" 2>&1; done

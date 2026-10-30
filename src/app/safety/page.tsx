@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { SITE } from "@/config/site";
+import { Suspense } from "react";
 import { Alert } from "@/components/ui/Alert";
+import { getCrisisContacts } from "@/lib/chat/queries";
+import { CrisisContactList } from "@/components/site/CrisisContacts";
 
 export const metadata: Metadata = { title: "Safety" };
 
@@ -17,10 +20,14 @@ export default function Safety() {
       <section>
         <h2 className="text-2xl font-bold">Crisis contacts</h2>
         <p className="mt-2">
-          Mira will list crisis lines and emergency contacts here once each one has been checked
-          and approved by a Mira administrator. We do not display numbers we have not verified.
-          This list is not yet published.
+          Only contacts that a Mira administrator has checked and approved are listed here. We never
+          show numbers we have not verified.
         </p>
+        <div className="mt-3">
+          <Suspense fallback={<p>Loading…</p>}>
+            <Contacts />
+          </Suspense>
+        </div>
       </section>
 
       <section>
@@ -60,4 +67,8 @@ export default function Safety() {
       </p>
     </div>
   );
+}
+
+async function Contacts() {
+  return <CrisisContactList contacts={await getCrisisContacts()} />;
 }
