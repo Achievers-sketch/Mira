@@ -13,16 +13,26 @@ export function createModelClient(): ModelClient {
   const model = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL;
   return {
     async *stream({ system, messages }) {
-      const stream = client.messages.stream({
-        model,
-        max_tokens: 700,
-        system,
-        messages,
-      });
-      for await (const event of stream) {
-        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-          yield event.delta.text;
+      try {
+        const stream = client.messages.stream({
+          model,
+          max_tokens: 700,
+          system,
+          messages,
+        });
+        for await (const event of stream) {
+          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+            yield event.delta.text;
+          }
         }
+      } catch (err) {
+        // Server-side diagnostics only: error type, HTTP status and the API's message.
+        // Never logs the API key or the user's messages.
+        const e = err as { name?: string; status?: number; message?: string };
+        console.error(
+          `[mira] model call failed: model=${model} name=${e.name} status=${e.status} message=${String(e.message).slice(0, 300)}`,
+        );
+        throw err;
       }
     },
   };
