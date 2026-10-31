@@ -5,6 +5,26 @@ import { readableToAsyncIterable, sseTextDeltas } from "./sse";
 export const DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";
 const DEFAULT_GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
+/**
+ * Reasoning models (the gpt-oss family) spend part of the token budget "thinking", so they get
+ * a larger budget and low reasoning effort to keep replies fast and avoid empty/truncated answers.
+ */
+export function buildGroqBody(
+  model: string,
+  system: string,
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+) {
+  const reasoning = /gpt-oss/i.test(model);
+  return {
+    model,
+    stream: true,
+    temperature: 0.6,
+    max_completion_tokens: reasoning ? 2048 : 700,
+    ...(reasoning ? { reasoning_effort: "low" } : {}),
+    messages: [{ role: "system", content: system }, ...messages],
+  };
+}
+
 export function isGroqConfigured() {
   return Boolean(process.env.GROQ_API_KEY);
 }
@@ -21,13 +41,7 @@ export function createGroqClient(): ModelClient {
         const res = await fetch(`${baseUrl}/chat/completions`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify({
-            model,
-            stream: true,
-            max_completion_tokens: 700,
-            temperature: 0.6,
-            messages: [{ role: "system", content: system }, ...messages],
-          }),
+          body: JSON.stringify(buildGroqBody(model, system, messages)),
         });
         if (!res.ok || !res.body) {
           let detail = "";
