@@ -1,7 +1,6 @@
 import { SITE, PLANS } from "@/config/site";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Alert } from "@/components/ui/Alert";
 import { PlanCard } from "@/components/site/PlanCard";
 
 const HOW = [
@@ -31,10 +30,9 @@ export default function Home() {
             <ButtonLink href="/professionals" variant="secondary">Find Human Support</ButtonLink>
           </div>
           <div className="mt-8 max-w-2xl">
-            <Alert tone="warning" title="Early preview">
-              Mira is being built in stages. The AI chat and human support features are not live
-              yet, and Mira is not an emergency service.
-            </Alert>
+            <p className="text-sm text-muted">
+              Human support features are coming soon. Mira is not an emergency service.
+            </p>
           </div>
         </div>
       </section>

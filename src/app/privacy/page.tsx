@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SITE } from "@/config/site";
-import { Alert } from "@/components/ui/Alert";
 
 export const metadata: Metadata = { title: "Privacy" };
 
@@ -8,11 +7,9 @@ export default function Privacy() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-12">
       <h1 className="text-4xl font-extrabold">Privacy</h1>
-      <Alert tone="warning" title="Draft, pending legal review">
-        This page describes our intended approach. It is a draft and has not yet been reviewed by
-        a lawyer. It will be reviewed against applicable Nigerian data-protection requirements
-        before Mira accepts real users.
-      </Alert>
+      <p className="text-sm text-muted">
+        Draft, being reviewed against Nigerian data-protection requirements.
+      </p>
 
       <section>
         <h2 className="text-2xl font-bold">Our approach</h2>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
@@ -9,6 +9,14 @@ import { Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/components/ui/cn";
 import { CrisisContactList } from "@/components/site/CrisisContacts";
 import type { CrisisContact } from "@/lib/chat/queries";
+import {
+  canSpeak,
+  describeRecognitionError,
+  getRecognitionCtor,
+  speak,
+  stopSpeaking,
+  type RecognitionLike,
+} from "@/lib/speech/browser";
 
 interface Msg {
   role: "user" | "assistant";
@@ -41,13 +49,68 @@ export function ChatPanel({
   const [helpOpen, setHelpOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
+  // Voice (browser Web Speech API). Detected after mount so server and client markup match.
+  const noSubscribe = () => () => {};
+  const canListen = useSyncExternalStore(noSubscribe, () => getRecognitionCtor() !== null, () => false);
+  const canTalk = useSyncExternalStore(noSubscribe, canSpeak, () => false);
+  const [listening, setListening] = useState(false);
+  const [readAloud, setReadAloud] = useState(false);
+  const recRef = useRef<RecognitionLike | null>(null);
+  const baseRef = useRef("");
+
+  useEffect(() => {
+    return () => {
+      recRef.current?.abort();
+      stopSpeaking();
+    };
+  }, []);
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [messages]);
 
+  function toggleListening() {
+    if (listening) {
+      recRef.current?.stop();
+      return;
+    }
+    const Ctor = getRecognitionCtor();
+    if (!Ctor) return;
+    stopSpeaking();
+    setError(null);
+    const rec = new Ctor();
+    rec.lang = navigator.language || "en-NG";
+    rec.continuous = false;
+    rec.interimResults = true;
+    baseRef.current = input ? input.trimEnd() + " " : "";
+    rec.onresult = (e) => {
+      let text = "";
+      for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+      setInput((baseRef.current + text).slice(0, MAX));
+    };
+    rec.onerror = (e) => {
+      if (e.error !== "aborted") setError(describeRecognitionError(e.error));
+    };
+    rec.onend = () => setListening(false);
+    recRef.current = rec;
+    try {
+      rec.start();
+      setListening(true);
+    } catch {
+      setError(describeRecognitionError("other"));
+    }
+  }
+
+  function toggleReadAloud() {
+    if (readAloud) stopSpeaking();
+    setReadAloud(!readAloud);
+  }
+
   async function send() {
     const text = input.trim();
     if (!text || busy) return;
+    recRef.current?.stop();
+    stopSpeaking();
     setError(null);
     setBusy(true);
     setInput("");
@@ -101,6 +164,8 @@ export function ChatPanel({
         const empty = acc.slice(0, acc.indexOf(SENTINEL)).trim() === "";
         if (empty) fail("Mira couldn't reply just now. Your message wasn't counted. Please try again.");
         else setError("Mira's reply was cut short. You can send your message again.");
+      } else if (readAloud) {
+        speak(acc);
       }
       router.refresh();
     } catch {
@@ -207,10 +272,38 @@ export function ChatPanel({
             </p>
           )}
         </div>
+        {canListen && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={toggleListening}
+            disabled={busy || !configured}
+            aria-pressed={listening}
+            aria-label={listening ? "Stop voice input" : "Speak your message"}
+          >
+            {listening ? "Stop" : "Speak"}
+          </Button>
+        )}
         <Button type="submit" disabled={busy || !configured || input.trim() === ""}>
           Send
         </Button>
       </form>
+
+      {(canListen || canTalk) && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2 text-sm text-muted">
+          {canTalk && (
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={readAloud} onChange={toggleReadAloud} className="size-4" />
+              Read Mira&apos;s replies aloud
+            </label>
+          )}
+          {listening && <span role="status">Listening…</span>}
+          <span>
+            Voice uses your browser&apos;s speech service, which may process audio outside Mira.
+            Mira never stores audio.
+          </span>
+        </div>
+      )}
 
       <Dialog open={helpOpen} onClose={() => setHelpOpen(false)} title="Human support">
         <p>

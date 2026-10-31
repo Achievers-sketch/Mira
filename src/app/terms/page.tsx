@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SITE } from "@/config/site";
-import { Alert } from "@/components/ui/Alert";
 
 export const metadata: Metadata = { title: "Terms" };
 
@@ -8,10 +7,7 @@ export default function Terms() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-12">
       <h1 className="text-4xl font-extrabold">Terms of use</h1>
-      <Alert tone="warning" title="Draft, pending legal review">
-        These terms are a draft outline and are not yet legally reviewed. They are not in force
-        because Mira is not yet accepting users.
-      </Alert>
+      <p className="text-sm text-muted">Draft terms, being finalised with legal review.</p>
 
       <section>
         <h2 className="text-2xl font-bold">Using Mira</h2>
