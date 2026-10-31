@@ -30,7 +30,7 @@ export function createModelClient(): ModelClient {
         // Never logs the API key or the user's messages.
         const e = err as { name?: string; status?: number; message?: string };
         console.error(
-          `[mira] model call failed: model=${model} name=${e.name} status=${e.status} message=${String(e.message).slice(0, 300)}`,
+          `[mira] model call failed: provider=anthropic model=${model} name=${e.name} status=${e.status} message=${String(e.message).slice(0, 300)}`,
         );
         throw err;
       }

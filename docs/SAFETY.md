@@ -10,6 +10,9 @@ Mira is a general wellbeing companion, not a clinical service or emergency servi
 5. **Honest product facts:** the model may only say Free is live and Plus/Pro/human sessions are coming soon.
 6. **Privacy:** chat rows are readable only by their owner (even admins cannot read them); only server code writes them; users can delete their conversations. Usage is counted separately so deleting chats does not reset limits.
 
+## Provider data terms
+Messages are sent to the chosen AI provider (Groq or Anthropic). Free tiers of some providers may retain or train on data. Check the provider's current terms and make sure Mira's privacy page describes them accurately before launch.
+
 ## Known limits
 - Detector is keyword-based; it can be evaded and can misfire.
 - English/Pidgin only so far; other languages are not covered.

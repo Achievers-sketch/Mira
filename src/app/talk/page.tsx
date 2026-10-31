@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { requireUser } from "@/lib/auth/dal";
 import { SITE } from "@/config/site";
 import { isAdminClientConfigured } from "@/lib/supabase/admin";
-import { isAnthropicConfigured } from "@/lib/ai/anthropic";
+import { isAiConfigured } from "@/lib/ai/provider";
 import { getConversationMessages, getCrisisContacts, listConversations } from "@/lib/chat/queries";
 import { ChatPanel } from "@/components/site/ChatPanel";
 import { Spinner } from "@/components/ui/Spinner";
@@ -39,7 +39,7 @@ async function TalkContent({ searchParams }: { searchParams: Promise<{ c?: strin
   ]);
 
   const activeId = requested && history ? requested : null;
-  const configured = isAnthropicConfigured() && isAdminClientConfigured();
+  const configured = isAiConfigured() && isAdminClientConfigured();
 
   return (
     <div className="mt-6 grid gap-6 md:grid-cols-[16rem_1fr]">

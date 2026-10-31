@@ -15,7 +15,7 @@ Contact: miraaisupport@gmail.com
 | Landing, pricing, safety, privacy, terms | Built. Privacy and terms are **drafts pending legal review**. |
 | Sign-up / sign-in / sign-out, dashboard | Built. Switches on when Supabase env vars are set; otherwise shows an honest "not set up" notice. **Not yet tested against a real Supabase project.** |
 | Database (profiles, roles, plans, subscriptions) + RLS | Migration written; 23 RLS checks pass on a local PostgreSQL with a Supabase-style shim. **Not yet applied to a real Supabase project.** |
-| Talk to Mira (AI chat) | Built: streaming Claude replies, saved history, delete, monthly + per-minute limits, crisis notice, AI disclaimer, "Request human support" (says coming soon). Tested with a fake Supabase and a fake Claude API; **never yet run against the real Claude API or real Supabase.** Shows an honest "not switched on" notice until configured. |
+| Talk to Mira (AI chat) | Built: streaming replies (Groq or Claude), saved history, delete, monthly + per-minute limits, crisis notice, AI disclaimer, "Request human support" (says coming soon). Tested with a fake Supabase and a fake Claude API; **never yet run against a real AI provider** (tested against fakes of Groq and Claude, and the live database migration is applied). Shows an honest "not switched on" notice until configured. |
 | Explore Support, Find a Professional, Appointments | "Not live yet" placeholder pages. |
 | Voice, providers, booking, video, payments, admin | **Not built yet** (Phases 4–10). |
 | Crisis contacts | **None published.** The table exists; only contacts an administrator has verified and activated are ever shown (enforced by the database). No admin screen yet (Phase 9). |
@@ -53,15 +53,19 @@ Never put the `service_role` key in the browser or in any `NEXT_PUBLIC_` variabl
 
 ## Turn on the AI chat (Phase 3)
 
-1. Supabase SQL editor: paste and run the **contents** of `supabase/migrations/0002_chat.sql` (after 0001).
-2. Get an API key at console.anthropic.com.
-3. In Vercel add these as **Secret** variables (they must NOT start with `NEXT_PUBLIC_`), then redeploy:
-   - `ANTHROPIC_API_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API → `service_role`). It bypasses database security, so keep it secret and server-only.
-   - optional `ANTHROPIC_MODEL` (default `claude-sonnet-5-5`)
-4. Try `/talk` while signed in.
+1. Supabase SQL editor: run `supabase/migrations/0002_chat.sql` (already applied to the live project).
+2. Choose an AI provider and add its key in Vercel as a **Secret** (names must NOT start with `NEXT_PUBLIC_`):
+   - **Groq** (free tier, no card): create a key at console.groq.com, then set `GROQ_API_KEY`. Optional `GROQ_MODEL` (default `llama-3.3-70b-versatile`).
+   - **Anthropic Claude** (needs paid credits): set `ANTHROPIC_API_KEY`. Optional `ANTHROPIC_MODEL` (default `claude-sonnet-5-5`).
+   - Optional `AI_PROVIDER` = `groq` or `anthropic` to force one. If unset, Groq is used when its key exists, otherwise Anthropic.
+3. Add `SUPABASE_SERVICE_ROLE_KEY` (Supabase -> Project Settings -> API -> `service_role`). It bypasses database security, so keep it secret and server-only.
+4. Redeploy (untick "Use existing Build Cache") and try `/talk` while signed in.
 
-Safety design is described in `docs/SAFETY.md`. **It must be reviewed by a qualified mental-health professional before real users rely on it.**
+If a reply fails, the cause is logged server-side in Vercel (Logs) as `[mira] model call failed: provider=... status=... message=...`. Keys and user messages are never logged.
+
+**Free-tier caution:** free API tiers can have different data-use terms. Groq states it does not retain inference data by default, but verify its current terms yourself. Do not put real users' sensitive conversations through a free tier of a provider whose terms allow training or human review. Review provider terms before launch.
+
+Safety design is described in `docs/SAFETY.md`. **It must be reviewed by a qualified mental-health professional before real users rely on it.** Safety prompts were written to be provider-neutral, but behaviour differs between models, so re-test crisis scenarios whenever you change model.
 
 ## Deploy on Vercel
 

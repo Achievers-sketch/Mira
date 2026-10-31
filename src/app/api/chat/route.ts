@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { isAdminClientConfigured } from "@/lib/supabase/admin";
-import { isAnthropicConfigured, createModelClient } from "@/lib/ai/anthropic";
+import { isAiConfigured, createModelClient } from "@/lib/ai/provider";
 import { createChatStore } from "@/lib/chat/store";
 import { handleChat, MAX_MESSAGE_CHARS } from "@/lib/chat/service";
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) return json(401, "unauthenticated", "Please sign in to talk to Mira.");
 
-  if (!isAnthropicConfigured() || !isAdminClientConfigured()) {
+  if (!isAiConfigured() || !isAdminClientConfigured()) {
     return json(503, "not_configured", "Mira's AI chat isn't set up on this site yet.");
   }
 
