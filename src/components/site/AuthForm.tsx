@@ -45,6 +45,17 @@ export function AuthForm({ mode, action }: { mode: "sign-in" | "register"; actio
         error={state.errors?.password}
         required
       />
+      {register && (
+        <label className="flex items-start gap-3">
+          <input type="checkbox" name="researchConsent" className="mt-1 size-5" />
+          <span>
+            Optional: allow Mira to use my <strong>de-identified</strong> chats to improve the service.
+            <span className="block text-sm text-muted">
+              Off unless you tick it. You can withdraw any time from your dashboard.
+            </span>
+          </span>
+        </label>
+      )}
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? <Spinner label={register ? "Creating account" : "Signing in"} /> : register ? "Create account" : "Sign in"}
       </Button>

@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { notifyNewRegistration } from "@/lib/notify/signup";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { registerSchema, signInSchema, toFieldErrors, type FieldErrors } from "@/lib/validation/auth";
@@ -38,7 +40,11 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { display_name: parsed.data.name },
+      data: {
+        display_name: parsed.data.name,
+        // Optional, unticked by default; withdrawable any time from the dashboard.
+        research_consent: formData.get("researchConsent") === "on" ? "true" : "false",
+      },
       emailRedirectTo: `${appUrl}/auth/callback`,
     },
   });
@@ -47,6 +53,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     // Generic message: don't reveal internals or whether an email is already registered.
     return { message: "We couldn't create your account. Check your details and try again.", values: typed(formData) };
   }
+  after(notifyNewRegistration);
   if (data.session) redirect("/dashboard");
   return { ok: true, message: "Check your email to confirm your address, then sign in." };
 }

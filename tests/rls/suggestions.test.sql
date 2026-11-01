@@ -67,3 +67,29 @@ do $$ begin begin
   raise exception 'FAIL  anon read suggestions';
 exception when insufficient_privilege then raise notice 'PASS  anon has no access'; end; end $$;
 reset role;
+
+-- ── research consent ──
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('dddddddd-2222-0000-0000-000000000004', 'gia@example.test', '{"research_consent":"true","display_name":"Gia"}'),
+  ('eeeeeeee-2222-0000-0000-000000000005', 'hal@example.test', '{"display_name":"Hal"}');
+select pg_temp.expect('sign-up checkbox sets consent and timestamp',
+  (select research_consent and research_consent_at is not null from public.profiles where id = 'dddddddd-2222-0000-0000-000000000004'));
+select pg_temp.expect('consent is off by default',
+  (select not research_consent and research_consent_at is null from public.profiles where id = 'eeeeeeee-2222-0000-0000-000000000005'));
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', 'eeeeeeee-2222-0000-0000-000000000005', false);
+update public.profiles set research_consent = true where id = 'eeeeeeee-2222-0000-0000-000000000005';
+select pg_temp.expect('user can opt in; database stamps the time',
+  (select research_consent and research_consent_at is not null from public.profiles where id = 'eeeeeeee-2222-0000-0000-000000000005'));
+update public.profiles set research_consent = false where id = 'eeeeeeee-2222-0000-0000-000000000005';
+select pg_temp.expect('withdrawal clears consent and timestamp',
+  (select not research_consent and research_consent_at is null from public.profiles where id = 'eeeeeeee-2222-0000-0000-000000000005'));
+do $$ begin begin
+  update public.profiles set research_consent_at = now() where id = 'eeeeeeee-2222-0000-0000-000000000005';
+  raise exception 'FAIL  user set consent timestamp directly';
+exception when insufficient_privilege then raise notice 'PASS  user cannot write the consent timestamp'; end; end $$;
+update public.profiles set research_consent = true where id = 'dddddddd-2222-0000-0000-000000000004';
+select pg_temp.expect('user cannot change another user''s consent',
+  (select research_consent from public.profiles where id = 'dddddddd-2222-0000-0000-000000000004') is null);
+reset role;

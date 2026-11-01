@@ -17,6 +17,11 @@ export default function Privacy() {
           <li>We aim to collect as little personal and sensitive information as possible.</li>
           <li>Your conversations with Mira are private to your account by default.</li>
           <li>We will not share your conversations with providers or staff without your explicit, recorded consent.</li>
+          <li>
+            Only if you opt in (off by default, withdrawable any time on your dashboard), we may use
+            de-identified copies of your chats to improve Mira. Names, emails, phone numbers and links are
+            removed, and exports are restricted to administrators.
+          </li>
           <li>We do not store raw voice recordings by default.</li>
           <li>We never store raw card details. Payments will be handled by a payment provider.</li>
           <li>Retention periods and deletion options will be stated clearly before launch.</li>
