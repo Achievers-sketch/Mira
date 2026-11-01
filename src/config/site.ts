@@ -88,4 +88,5 @@ export const NAV = [
   { href: "/professionals", label: "Find a Professional" },
   { href: "/appointments", label: "Appointments" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/feedback", label: "Suggest an improvement" },
 ] as const;

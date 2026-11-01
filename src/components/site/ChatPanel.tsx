@@ -181,9 +181,12 @@ export function ChatPanel({
         <p className="text-sm text-muted">
           Mira is an AI, not a therapist or an emergency service.
         </p>
-        <Button variant="secondary" className="min-h-9 px-4 py-1 text-sm" onClick={() => setHelpOpen(true)}>
-          Request human support
-        </Button>
+        <div className="flex items-center gap-3">
+          <a className="text-sm font-semibold underline" href="/feedback">Suggest an improvement</a>
+          <Button variant="secondary" className="min-h-9 px-4 py-1 text-sm" onClick={() => setHelpOpen(true)}>
+            Request human support
+          </Button>
+        </div>
       </div>
 
       {crisis && (
