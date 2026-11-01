@@ -50,6 +50,13 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   });
 
   if (error) {
+    console.error(`[mira] signUp failed: code=${error.code ?? "unknown"} status=${error.status ?? "?"}`);
+    if (error.code === "over_email_send_rate_limit") {
+      return {
+        message: "Lots of people are signing up right now. Please wait a little while and try again.",
+        values: typed(formData),
+      };
+    }
     // Generic message: don't reveal internals or whether an email is already registered.
     return { message: "We couldn't create your account. Check your details and try again.", values: typed(formData) };
   }
